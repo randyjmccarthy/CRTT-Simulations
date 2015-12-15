@@ -33,6 +33,10 @@ p5 <- numeric(nSims)    # storage bin for sqrt of number of 8's, 9's, and 10's
 p6 <- numeric(nSims)    # storage bin for round 1 duration
 p7 <- numeric(nSims)    # storage bin for mean duration trials 1-25
 p8 <- numeric(nSims)    # mean sound blast and duration trials 1-25
+p9 <- numeric(nSims)    # mean of trial 1 sound blast and duration
+p10 <- numeric(nSims)   # mean of Volume * duration, trials 1-25
+p11 <- numeric(nSims)   # mean of Volume * log(duration), trials 1-25
+p12 <- numeric(nSims)   # mean of Volume * sqrt(duration), trials 1-25
 pmin <- numeric(nSims)
 
 ###############################################################################
@@ -52,9 +56,15 @@ for(i in 1:nSims){        # for each simulated experiment
   sqrtNumHigh <- sqrt(numHigh)
   meanDuration <- rowMeans(duration)
   meanSBDuration <- rowMeans(soundBlast, duration)
+  meanT1 <- rowMeans(cbind(soundBlast[,1], duration[,1]))
+  meanProd <- rowMeans(soundBlast*duration)
+  meanProdLog <- rowMeans(soundBlast*log(duration))
+  meanProdSqrt <- rowMeans(soundBlast*sqrt(duration))
+  
                             # gather those variables in a data.frame
   df <- data.frame(group, soundBlast, duration, meanSB, numHigh, numHigh2,
-                   sqrtNumHigh, meanDuration, meanSBDuration)
+                   sqrtNumHigh, meanDuration, meanSBDuration, meanT1, meanProd,
+                   meanProdLog, meanProdSqrt)
                             # p-value using first trial sound blast
   p1[i] <- t.test(df$X1 ~ df$group)$p.value  
                          # p-value using mean sound blast of trials 1-25
@@ -69,17 +79,26 @@ for(i in 1:nSims){        # for each simulated experiment
   p6[i] <- t.test(df$X1.1 ~ df$group)$p.value 
                         # p-value using mean duration of trials 1-25
   p7[i] <- t.test(df$meanDuration ~ df$group)$p.value 
-                       # p-value using mean duration of trials 1-25
+                       # p-value using mean of mean blast & mean duration of trials 1-25
   p8[i] <- t.test(df$meanSBDuration ~ df$group)$p.value 
+                        # mean of trial 1 sound blast and duration
+  p9[i] <- t.test(df$meanT1 ~ df$group)$p.value 
+                        # mean of Volume * duration, trials 1-25
+  p10[i] <- t.test(df$meanProd ~ df$group)$p.value
+                        # mean of Volume * log(duration), trials 1-25
+  p11[i] <- t.test(df$meanProdLog ~ df$group)$p.value
+                        # mean of Volume * sqrt(duration), trials 1-25
+  p12[i] <- t.test(df$meanProdSqrt ~ df$group)$p.value
                          # min p-value of different quantifications
-  pmin[i] <- min(p1[i], p2[i], p3[i], p4[i], p5[i], p6[i], p7[i], p8[i])
+  pmin[i] <- min(p1[i], p2[i], p3[i], p4[i], p5[i], p6[i], p7[i], p8[i], p9[i], p10[i], 
+                 p11[i], p12[i])
 }
 
 ###############################################################################
 # fourth, gathering p-values and graphing results 
 ###############################################################################
 
-d <- data.frame(p1, p2, p3, p4, p5, p6, p7, p8, pmin)
+d <- data.frame(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, pmin)
 
 # histogram for round 1 sound blast levels 
 p1result <- ifelse(p1 <= .05,
